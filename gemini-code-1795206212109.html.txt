@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Le Manuel Français — Cours & Ressources 6ème</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --surface: #181818;
+      --surface-2: #222222;
+      --surface-3: #2a2a2a;
+      --border: #303030;
+      --text: #f1f1f1;
+      --muted: #aaaaaa;
+      --red: #ff0033;
+      --blue: #3ea6ff;
+      --gold: #ffb800;
+      --green: #2ba640;
+      --sidebar-w: 230px;
+      --header-h: 58px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { background: var(--bg); color: var(--text); overflow-x: hidden; }
+    button, input, select, textarea { font-family: inherit; color: inherit; }
+    .hidden { display: none !important; }
+
+    /* Camouflage Éducation Nationale (Touche ÉCHAP ou bouton Cours) */
+    #camo-screen {
+      position: fixed; inset: 0; background: #ffffff; color: #1e293b; z-index: 9999;
+      padding: 24px; overflow-y: auto;
+    }
+    .camo-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1d4ed8; padding-bottom: 12px; margin-bottom: 20px; }
+    .camo-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+
+    /* Header Estilo YouTube */
+    header.yt-header {
+      position: fixed; top: 0; left: 0; right: 0; height: var(--header-h);
+      background: rgba(15, 15, 15, 0.96); backdrop-filter: blur(12px);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 16px; z-index: 100; border-bottom: 1px solid var(--border); gap: 12px;
+    }
+    .yt-left { display: flex; align-items: center; gap: 12px; }
+    .icon-btn {
+      background: transparent; border: none; color: var(--text); width: 38px; height: 38px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem; cursor: pointer;
+    }
+    .icon-btn:hover { background: var(--surface-2); }
+    .yt-logo { display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 800; font-size: 1.15rem; letter-spacing: -0.4px; }
+    .yt-logo-icon {
+      background: var(--red); color: #fff; width: 30px; height: 22px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center; font-size: 0.75rem;
+    }
+    .yt-logo sup { font-size: 0.65rem; color: var(--muted); font-weight: 600; margin-left: 2px; }
+
+    .yt-center { flex: 1; max-width: 540px; display: flex; align-items: center; gap: 8px; }
+    .search-box {
+      flex: 1; display: flex; align-items: center; background: #121212;
+      border: 1px solid var(--border); border-radius: 999px; overflow: hidden; height: 38px;
+    }
+    .search-box input {
+      flex: 1; background: transparent; border: none; padding: 0 14px; outline: none; font-size: 0.92rem;
+    }
+    .search-box button {
+      background: var(--surface-2); border: none; border-left: 1px solid var(--border);
+      height: 100%; padding: 0 16px; cursor: pointer; font-size: 1rem;
+    }
+
+    .yt-right { display: flex; align-items: center; gap: 8px; }
+    .create-pill {
+      background: var(--surface-2); border: 1px solid var(--border); padding: 7px 14px;
+      border-radius: 999px; font-weight: 600; font-size: 0.85rem; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .create-pill:hover { background: var(--surface-3); }
+    .coin-badge {
+      background: rgba(255, 184, 0, 0.14); border: 1px solid var(--gold); color: var(--gold);
+      padding: 5px 10px; border-radius: 999px; font-size: 0.82rem; font-weight: 700; cursor: pointer;
+    }
+    .panic-pill {
+      background: #dc2626; color: #fff; border: none; padding: 6px 10px; border-radius: 8px;
+      font-weight: 700; font-size: 0.78rem; cursor: pointer;
+    }
+
+    /* Sidebar Estilo YouTube */
+    aside.yt-sidebar {
+      position: fixed; top: var(--header-h); left: 0; bottom: 0; width: var(--sidebar-w);
+      background: var(--bg); border-right: 1px solid var(--border); padding: 12px 10px;
+      overflow-y: auto; z-index: 90; transition: transform 0.2s ease;
+    }
+    .side-item {
+      width: 100%; background: transparent; border: none; color: var(--text);
+      padding: 10px 12px; border-radius: 10px; display: flex; align-items: center; gap: 14px;
+      font-size: 0.9rem; cursor: pointer; text-align: left; margin-bottom: 4px;
+    }
+    .side-item:hover { background: var(--surface-2); }
+    .side-item.active { background: var(--surface-2); font-weight: 700; }
+    .side-divider { height: 1px; background: var(--border); margin: 10px 0; }
+    .side-title { font-size: 0.78rem; color: var(--muted); font-weight: 700; padding: 4px 12px; text-transform: uppercase; }
+
+    /* Contenu Principal */
+    main.yt-main {
+      margin-top: var(--header-h); margin-left: var(--sidebar-w);
+      padding: 16px 20px 80px; min-height: calc(100vh - var(--header-h));
+    }
+    @media (max-width: 820px) {
+      aside.yt-sidebar { transform: translateX(-100%); }
+      aside.yt-sidebar.open { transform: translateX(0); box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+      main.yt-main { margin-left: 0; padding: 14px 14px 80px; }
+      .yt-center { max-width: 240px; }
+    }
+
+    /* Chips de Catégories */
+    .chips-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 14px; margin-bottom: 10px; }
+    .chip {
+      background: var(--surface-2); border: 1px solid var(--border); padding: 6px 14px;
+      border-radius: 8px; font-size: 0.84rem; font-weight: 600; white-space: nowrap; cursor: pointer;
+    }
+    .chip.active { background: var(--text); color: var(--bg); }
+
+    /* Grille Vidéos YouTube */
+    .yt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; }
+    .yt-card { cursor: pointer; transition: transform 0.15s; }
+    .yt-thumb-wrap {
+      position: relative; aspect-ratio: 16/9; background: #000; border-radius: 12px;
+      overflow: hidden; border: 1px solid var(--border);
+    }
+    .yt-thumb-wrap video { width: 100%; height: 100%; object-fit: cover; }
+    .yt-badge-type {
+      position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.82);
+      padding: 2px 6px; border-radius: 4px; font-size: 0.72rem; font-weight: 700;
+    }
+    .yt-card-info { display: flex; gap: 12px; margin-top: 10px; align-items: flex-start; justify-content: space-between; }
+    .avatar {
+      width: 38px; height: 38px; border-radius: 50%; object-fit: cover; background: #2563eb;
+      display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; color: #fff;
+    }
+    .yt-title { font-size: 0.96rem; font-weight: 600; line-height: 1.3; margin-bottom: 4px; }
+    .yt-sub { font-size: 0.8rem; color: var(--muted); }
+    .verified { color: var(--blue); font-size: 0.85rem; margin-left: 3px; }
+
+    /* Page Lecture Vidéo (Watch View) */
+    .watch-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+    @media (max-width: 960px) { .watch-layout { grid-template-columns: 1fr; } }
+    .watch-player { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 14px; overflow: hidden; }
+    .watch-player video { width: 100%; height: 100%; }
+    .watch-actions { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin: 12px 0; }
+    .action-pill {
+      background: var(--surface-2); border: 1px solid var(--border); padding: 8px 14px;
+      border-radius: 999px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .action-pill:hover { background: var(--surface-3); }
+    .sub-btn { background: var(--text); color: var(--bg); border: none; padding: 8px 16px; border-radius: 999px; font-weight: 700; cursor: pointer; }
+    .sub-btn.subscribed { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+    .desc-box { background: var(--surface-2); border-radius: 12px; padding: 12px; font-size: 0.88rem; margin-bottom: 16px; }
+
+    /* Shorts Feed */
+    .shorts-container { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+    .short-item {
+      position: relative; width: 100%; max-width: 390px; aspect-ratio: 9/16;
+      background: #000; border-radius: 16px; overflow: hidden; border: 1px solid var(--border);
+    }
+    .short-item video { width: 100%; height: 100%; object-fit: cover; }
+    .short-ui {
+      position: absolute; inset: 0; pointer-events: none;
+      background: linear-gradient(transparent 55%, rgba(0,0,0,0.88));
+      display: flex; justify-content: space-between; align-items: flex-end; padding: 16px;
+    }
+    .short-meta, .short-side-btns { pointer-events: auto; }
+    .short-side-btns { display: flex; flex-direction: column; gap: 14px; align-items: center; }
+    .short-circle {
+      width: 46px; height: 46px; border-radius: 50%; background: rgba(34,34,34,0.85);
+      border: 1px solid rgba(255,255,255,0.15); color: #fff; font-size: 1.15rem; cursor: pointer;
+    }
+
+    /* Éditeur CapCut Studio */
+    .capcut-grid { display: grid; grid-template-columns: 360px 1fr; gap: 20px; }
+    @media (max-width: 860px) { .capcut-grid { grid-template-columns: 1fr; } }
+    .preview-canvas {
+      position: relative; width: 100%; aspect-ratio: 9/16; background: #000;
+      border-radius: 14px; overflow: hidden; border: 2px solid var(--border); touch-action: none;
+    }
+    .preview-canvas video { width: 100%; height: 100%; object-fit: cover; }
+    .sticker-node {
+      position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%) scale(1);
+      font-weight: 800; font-size: 1.35rem; padding: 6px 12px; border-radius: 8px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.9); user-select: none; cursor: move; white-space: nowrap;
+    }
+    .panel-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+    .input-dark {
+      width: 100%; background: var(--surface-2); border: 1px solid var(--border);
+      padding: 10px 12px; border-radius: 10px; margin-bottom: 10px; outline: none; font-size: 0.9rem;
+    }
+    .input-dark:focus { border-color: var(--blue); }
+    .btn-primary { background: var(--blue); color: #000; border: none; padding: 10px 16px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+    .btn-danger { background: #dc2626; color: #fff; border: none; padding: 8px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    .timeline-track { display: flex; gap: 8px; overflow-x: auto; background: #121212; padding: 10px; border-radius: 10px; border: 1px solid var(--border); min-height: 52px; align-items: center; }
+    .track-clip { background: #2563eb; padding: 6px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+
+    /* Navigation Mobile Basse */
+    nav.mobile-bar {
+      display: none; position: fixed; bottom: 0; left: 0; right: 0; height: 58px;
+      background: var(--surface); border-top: 1px solid var(--border); z-index: 95;
+      justify-content: space-around; align-items: center;
+    }
+    @media (max-width: 820px) { nav.mobile-bar { display: flex; } }
+    .mob-btn { background: none; border: none; color: var(--muted); font-size: 0.7rem; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
+    .mob-btn.active { color: var(--text); font-weight: 700; }
+  </style>
+</head>
+<body>
+
+  <!-- ÉCRAN DE CAMOUFLAGE SCOLAIRE (Touche ÉCHAP ou bouton Cours) -->
+  <div id="camo-screen" class="hidden">
+    <div class="camo-top">
+      <h1 style="font-size:1.25rem; color:#1d4ed8;">📘 Le Manuel Français — Cours de 6ème (Programme Officiel)</h1>
+      <button style="background:#1d4ed8; color:#fff; border:none; padding:8px 14px; border-radius:6px; font-weight:600; cursor:pointer;" onclick="toggleCamo(false)">Quitter le mode cours</button>
+    </div>
+    <div class="camo-box">
+      <h3>Séance 1 : Les natures et fonctions grammaticales</h3>
+      <p style="margin-top:6px; line-height:1.5;">Le groupe nominal s'organise autour d'un nom noyau accompagné d'un déterminant et éventuellement d'expansions (adjectif qualificatif épithète, complément du nom).</p>
+    </div>
+    <div class="camo-box">
+      <h3>Séance 2 : L'accord du participe passé</h3>
+      <p style="margin-top:6px; line-height:1.5;">Employé avec l'auxiliaire <em>être</em>, le participe passé s'accorde en genre et en nombre avec le sujet du verbe.</p>
+    </div>
+  </div>
+
+  <!-- HEADER YOUTUBE / TUBESTUDIO PRO -->
+  <header class="yt-header">
+    <div class="yt-left">
+      <button class="icon-btn" onclick="toggleSidebar()">☰</button>
+      <div class="yt-logo" onclick="openView('home')">
+        <div class="yt-logo-icon">▶</div>
+        <span>TubeStudio<sup>PRO</sup></span>
+      </div>
+    </div>
+
+    <div class="yt-center">
+      <div class="search-box">
+        <input type="text" id="global-search" placeholder="Rechercher une vidéo, un créateur..." oninput="renderHome()" />
+        <button onclick="renderHome()">🔍</button>
+      </div>
+    </div>
+
+    <div class="yt-right">
+      <button class="create-pill" onclick="openView('studio')">➕ Créer</button>
+      <div class="coin-badge" id="top-coins" onclick="openView('store')">🪙 0</div>
+      <button class="panic-pill" onclick="toggleCamo(true)" title="Échap">COURS</button>
+    </div>
+  </header>
+
+  <!-- BARRE LATÉRALE YOUTUBE -->
+  <aside class="yt-sidebar" id="yt-sidebar">
+    <button class="side-item active" id="side-home" onclick="openView('home')">🏠 Accueil</button>
+    <button class="side-item" id="side-shorts" onclick="openView('shorts')">⚡ Shorts</button>
+    <button class="side-item" id="side-subs" onclick="openView('subs')">📺 Abonnements</button>
+    <div class="side-divider"></div>
+    <div class="side-title">Créateur & Studio</div>
+    <button class="side-item" id="side-studio" onclick="openView('studio')">🎬 Studio CapCut</button>
+    <button class="side-item" id="side-store" onclick="openView('store')">💎 Monétisation</button>
+    <button class="side-item" id="side-profile" onclick="openView('profile')">👤 Mon Compte / Admin</button>
+    <div class="side-divider"></div>
+    <div style="padding: 8px 12px; font-size: 0.78rem; color: var(--green);" id="cloud-indicator">● Cloud Supabase actif</div>
+  </aside>
+
+  <!-- ZONE PRINCIPALE -->
+  <main class="yt-main">
+
+    <!-- VUE 1 : ACCUEIL -->
+    <section id="view-home">
+      <div class="chips-bar">
+        <button class="chip active" onclick="filterCategory('all', this)">Tout</button>
+        <button class="chip" onclick="filterCategory('Gaming', this)">Gaming & VR</button>
+        <button class="chip" onclick="filterCategory('Tutoriel', this)">Tutoriels</button>
+        <button class="chip" onclick="filterCategory('Divertissement', this)">Divertissement</button>
+        <button class="chip" onclick="loadFromSupabase()">🔄 Actualiser le flux</button>
+      </div>
+      <div id="home-grid" class="yt-grid"></div>
+    </section>
+
+    <!-- VUE 2 : LECTEUR VIDÉO STYLE YOUTUBE -->
+    <section id="view-watch" class="hidden">
+      <button class="action-pill" style="margin-bottom:12px;" onclick="openView('home')">← Retour aux vidéos</button>
+      <div class="watch-layout">
+        <div>
+          <div class="watch-player">
+            <video id="watch-video-el" controls playsinline webkit-playsinline></video>
+          </div>
+          <h2 id="watch-title" style="margin-top:12px; font-size:1.2rem;">Titre</h2>
+          <div class="watch-actions">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div class="avatar" id="watch-avatar">U</div>
+              <div>
+                <div id="watch-author" style="font-weight:700;">@Auteur</div>
+                <div id="watch-subs-count" style="font-size:0.78rem; color:var(--muted);">Créateur vérifié</div>
+              </div>
+              <button class="sub-btn" id="watch-sub-btn" onclick="toggleSubscribe()">S'abonner</button>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+              <button class="action-pill" onclick="likeWatchedVideo()">👍 <span id="watch-likes">0</span></button>
+              <button class="action-pill" style="color:var(--gold); border-color:var(--gold);" onclick="tipCreator()">🎁 Soutenir (100 🪙)</button>
+              <button class="btn-danger hidden" id="watch-delete-btn" onclick="deleteVideoGlobally(currentWatchId)">🗑️ Supprimer pour tout le monde</button>
+            </div>
+          </div>
+          <div class="desc-box">
+            <strong id="watch-views">0 vues</strong> • <span id="watch-date">Aujourd'hui</span>
+            <p id="watch-desc" style="margin-top:6px; color:var(--muted);">Publié sur TubeStudio Pro.</p>
+          </div>
+
+          <!-- Commentaires -->
+          <div class="panel-card">
+            <h4 style="margin-bottom:10px;">💬 Commentaires</h4>
+            <div style="display:flex; gap:8px; margin-bottom:12px;">
+              <input type="text" id="comment-input" class="input-dark" style="margin:0;" placeholder="Ajouter un commentaire public..." />
+              <button class="btn-primary" onclick="postComment()">Envoyer</button>
+            </div>
+            <div id="comments-list"></div>
+          </div>
+        </div>
+
+        <div>
+          <h4 style="margin-bottom:10px;">À suivre</h4>
+          <div id="up-next-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VUE 3 : SHORTS -->
+    <section id="view-shorts" class="hidden">
+      <div style="display:flex; justify-content:center; gap:10px; margin-bottom:14px;">
+        <button class="action-pill" onclick="loadFromSupabase()">🔄 Actualiser les Shorts</button>
+      </div>
+      <div id="shorts-feed" class="shorts-container"></div>
+    </section>
+
+    <!-- VUE 4 : ABONNEMENTS -->
+    <section id="view-subs" class="hidden">
+      <h2 style="margin-bottom:14px;">📺 Vidéos de tes abonnements</h2>
+      <div id="subs-grid" class="yt-grid"></div>
+    </section>
+
+    <!-- VUE 5 : STUDIO CAPCUT PRO -->
+    <section id="view-studio" class="hidden">
+      <h2 style="margin-bottom:14px;">🎬 Studio de Création & Montage CapCut</h2>
+      <div class="capcut-grid">
+        <div>
+          <div class="preview-canvas" id="capcut-stage">
+            <video id="cam-video" autoplay playsinline muted webkit-playsinline></video>
+            <div id="stickers-container"></div>
+          </div>
+          <p id="studio-cam-msg" style="font-size:0.82rem; color:var(--gold); text-align:center; margin-top:8px;">
+            Prêt à filmer ou importer une vidéo
+          </p>
+        </div>
+
+        <div>
+          <div class="panel-card">
+            <h3 style="margin-bottom:10px;">1. Caméra & Importation</h3>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+              <button class="btn-primary" onclick="initCamera()">📷 Activer Caméra</button>
+              <button class="action-pill" onclick="switchCamFacing()">🔄 Retourner</button>
+              <button class="btn-danger" id="btn-record" onclick="toggleRecord()">⏺ Enregistrer</button>
+              <label class="action-pill" style="cursor:pointer;">
+                🎥 Caméra iPad/Tel
+                <input type="file" accept="video/*" capture="environment" class="hidden" onchange="handleFileClip(event)" />
+              </label>
+              <label class="action-pill" style="cursor:pointer;">
+                📁 Galerie
+                <input type="file" accept="video/*" class="hidden" onchange="handleFileClip(event)" />
+              </label>
+            </div>
+            <div class="timeline-track" id="capcut-timeline">
+              <span style="color:var(--muted); font-size:0.8rem;">Timeline vide — ajoute un clip</span>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <h3 style="margin-bottom:10px;">2. Textes & Autocollants (Zoom à 2 doigts)</h3>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="sticker-text" class="input-dark" style="margin:0;" placeholder="Texte ou emoji (ex: 🔥 Incroyable)" />
+              <input type="color" id="sticker-color" value="#ffffff" style="width:44px; height:40px; border:none; background:none;" />
+              <button class="btn-primary" onclick="addSticker()">+ Ajouter</button>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <h3 style="margin-bottom:10px;">3. Publication Globale</h3>
+            <input type="text" id="vid-title-input" class="input-dark" placeholder="Titre de la vidéo ou du Short..." />
+            <div style="display:flex; gap:8px; margin-bottom:10px;">
+              <select id="vid-format-select" class="input-dark" style="margin:0;">
+                <option value="video">Vidéo Standard (16:9)</option>
+                <option value="short">Short Vertical (9:16)</option>
+              </select>
+              <select id="vid-cat-select" class="input-dark" style="margin:0;">
+                <option value="Gaming">Gaming & VR</option>
+                <option value="Tutoriel">Tutoriel</option>
+                <option value="Divertissement">Divertissement</option>
+              </select>
+            </div>
+            <button class="btn-primary" id="btn-publish-now" style="width:100%; background:var(--gold);" onclick="publishVideoToCloud()">
+              🚀 Publier pour tout le monde (+50 🪙)
+            </button>
+            <p id="publish-feedback" style="font-size:0.82rem; color:var(--muted); margin-top:8px;"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VUE 6 : BOUTIQUE & MONÉTISATION -->
+    <section id="view-store" class="hidden">
+      <div class="panel-card">
+        <h2 style="margin-bottom:8px;">💎 Programme Partenaire & TubeCoins</h2>
+        <p style="color:var(--muted); margin-bottom:16px;">Utilise tes TubeCoins pour débloquer les fonctionnalités de monétisation avancées.</p>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:14px;">
+          <div class="panel-card" style="background:var(--surface-2);">
+            <h3>⭐ Monétisation+</h3>
+            <p style="font-size:0.85rem; color:var(--muted); margin:8px 0;">Active les dons en direct et le badge créateur soutenu.</p>
+            <p style="color:var(--gold); font-weight:800; margin-bottom:10px;">5 000 🪙</p>
+            <button class="btn-primary" style="background:var(--gold);" onclick="buyTier('plus', 5000)">Débloquer</button>
+          </div>
+          <div class="panel-card" style="background:var(--surface-2);">
+            <h3>👑 Monétisation Ultra</h3>
+            <p style="font-size:0.85rem; color:var(--muted); margin:8px 0;">Récompenses de paliers et revenus mensuels automatiques.</p>
+            <p style="color:var(--gold); font-weight:800; margin-bottom:10px;">15 000 🪙</p>
+            <button class="btn-primary" style="background:var(--gold);" onclick="buyTier('ultra', 15000)">Débloquer</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VUE 7 : PROFIL & ADMIN -->
+    <section id="view-profile" class="hidden">
+      <div id="login-card" class="panel-card" style="max-width:460px; margin:0 auto;">
+        <h2 style="margin-bottom:8px;">🔐 Connexion / Création de compte</h2>
+        <p style="color:var(--muted); font-size:0.85rem; margin-bottom:14px;">Tous les comptes sont enregistrés dans Supabase et accessibles depuis n'importe quel appareil.</p>
+        <input type="text" id="auth-username" class="input-dark" placeholder="Pseudo (ex: @Santiagovbto)" />
+        <input type="password" id="auth-password" class="input-dark" placeholder="Mot de passe" />
+        <div style="display:flex; gap:10px;">
+          <button class="btn-primary" style="flex:1;" onclick="handleLogin()">Se connecter</button>
+          <button class="action-pill" style="flex:1; justify-content:center;" onclick="handleRegister()">Créer un compte</button>
+        </div>
+      </div>
+
+      <div id="account-card" class="panel-card hidden">
+        <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px;">
+          <img id="acc-avatar" class="avatar" style="width:68px; height:68px;" src="" alt="Avatar" />
+          <div>
+            <h2 id="acc-name">@Utilisateur</h2>
+            <p id="acc-meta" style="color:var(--muted); font-size:0.86rem;">Créateur</p>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+          <label class="action-pill" style="cursor:pointer;">
+            🖼️ Changer photo de profil
+            <input type="file" accept="image/*" class="hidden" onchange="changeProfilePic(event)" />
+          </label>
+          <button class="btn-danger" onclick="handleLogout()">Se déconnecter</button>
+        </div>
+
+        <!-- Panneau Admin @Santiagovbto -->
+        <div id="admin-box" class="panel-card hidden" style="background:rgba(62,166,255,0.08); border-color:var(--blue);">
+          <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px; margin-bottom:12px;">
+            <h3>🛡️ Console Administrateur & DataSave</h3>
+            <div style="display:flex; gap:8px;">
+              <button class="btn-primary" style="padding:6px 10px; font-size:0.8rem;" onclick="saveGlobalBackup()">💾 Forcer DataSave</button>
+              <button class="action-pill" style="padding:6px 10px; font-size:0.8rem;" onclick="restoreGlobalBackup()">♻️ Restaurer DataSave</button>
+            </div>
+          </div>
+          <h4 style="margin-bottom:6px;">Comptes inscrits dans le Cloud :</h4>
+          <div id="admin-users" style="margin-bottom:14px; font-size:0.85rem;"></div>
+          <h4 style="margin-bottom:6px;">Toutes les vidéos & Shorts en ligne :</h4>
+          <div id="admin-vids" style="font-size:0.85rem;"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BARRE DE NAVIGATION MOBILE -->
+  <nav class="mobile-bar">
+    <button class="mob-btn active" id="mob-home" onclick="openView('home')">🏠<span>Accueil</span></button>
+    <button class="mob-btn" id="mob-shorts" onclick="openView('shorts')">⚡<span>Shorts</span></button>
+    <button class="mob-btn" id="mob-studio" onclick="openView('studio')">➕<span>Créer</span></button>
+    <button class="mob-btn" id="mob-subs" onclick="openView('subs')">📺<span>Abos</span></button>
+    <button class="mob-btn" id="mob-profile" onclick="openView('profile')">👤<span>Profil</span></button>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = "https://xyifukosakjzpekbxtxx.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_H2AxN_ggBXtd2fYE-yry4g_BlEhq9qR";
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const BANNED_WORDS = ["insulte", "violence", "piratage", "hack", "grosmot"];
+    let users = JSON.parse(localStorage.getItem("tsp_users") || "null") || [
+      { username: "@Santiagovbto", password: "123", coins: 25000, verified: true, role: "Administrateur & Développeur", tier: "ultra", avatar: "" }
+    ];
+    let currentUser = JSON.parse(localStorage.getItem("tsp_session") || "null");
+    let subscriptions = JSON.parse(localStorage.getItem("tsp_subs") || "[]");
+    let commentsMap = JSON.parse(localStorage.getItem("tsp_comments") || "{}");
+    let videos = [];
+    let selectedCategory = "all";
+    let currentWatchId = null;
+
+    let camStream = null;
+    let camFacing = "user";
+    let recorder = null;
+    let chunks = [];
+    let clips = [];
+
+    // --- SYNCHRONISATION SUPABASE ---
+    async function loadFromSupabase() {
+      const ind = document.getElementById("cloud-indicator");
+      if (ind) ind.textContent = "⏳ Synchronisation...";
+
+      const { data: dbUsers } = await sb.from("users").select("*");
+      if (dbUsers && dbUsers.length > 0) {
+        users = dbUsers;
+        localStorage.setItem("tsp_users", JSON.stringify(users));
+        if (currentUser) {
+          const me = users.find(u => u.username.toLowerCase() === currentUser.username.toLowerCase());
+          if (me) {
+            currentUser = me;
+            localStorage.setItem("tsp_session", JSON.stringify(currentUser));
+          }
+        }
+      }
+
+      const { data: dbVideos } = await sb.from("videos").select("*").order("created_at", { ascending: false });
+      if (dbVideos) {
+        videos = dbVideos;
+      }
+
+      renderHome();
+      renderShorts();
+      renderSubs();
+      refreshProfileUI();
+      if (ind) ind.textContent = "● Cloud Supabase actif";
+    }
+
+    sb.channel("tsp-realtime-channel")
+      .on("postgres_changes", { event: "*", schema: "public", table: "videos" }, () => loadFromSupabase())
+      .on("postgres_changes", { event: "*", schema: "public", table: "users" }, () => loadFromSupabase())
+      .subscribe();
+
+    async function saveGlobalBackup(silent = false) {
+      const { error } = await sb.from("datasave").upsert({
+        id: "global_backup",
+        payload: { savedAt: new Date().toISOString(), users, videos },
+        updated_at: new Date().toISOString()
+      });
+      if (!silent) {
+        alert(error ? "Erreur DataSave : " + error.message : "💾 Sauvegarde DataSave enregistrée !");
+      }
+    }
+
+    async function restoreGlobalBackup() {
+      const { data, error } = await sb.from("datasave").select("*").eq("id", "global_backup").single();
+      if (error || !data || !data.payload) return alert("Aucune sauvegarde DataSave trouvée.");
+      if (Array.isArray(data.payload.users) && data.payload.users.length) {
+        await sb.from("users").upsert(data.payload.users);
+      }
+      if (Array.isArray(data.payload.videos) && data.payload.videos.length) {
+        await sb.from("videos").upsert(data.payload.videos);
+      }
+      await loadFromSupabase();
+      alert("♻️ Données restaurées depuis DataSave !");
+    }
+
+    async function upsertUser(userObj) {
+      const idx = users.findIndex(u => u.username.toLowerCase() === userObj.username.toLowerCase());
+      if (idx !== -1) users[idx] = userObj;
+      else users.push(userObj);
+
+      localStorage.setItem("tsp_users", JSON.stringify(users));
+      if (currentUser && currentUser.username.toLowerCase() === userObj.username.toLowerCase()) {
+        currentUser = userObj;
+        localStorage.setItem("tsp_session", JSON.stringify(currentUser));
+      }
+
+      await sb.from("users").upsert({
+        username: userObj.username,
+        password: userObj.password,
+        coins: userObj.coins,
+        verified: !!userObj.verified,
+        role: userObj.role || "Créateur",
+        tier: userObj.tier || "free",
+        avatar: userObj.avatar || ""
+      });
+
+      saveGlobalBackup(true);
+      refreshProfileUI();
+    }
+
+    // Camouflage
+    function toggleCamo(show) {
+      document.getElementById("camo-screen").classList.toggle("hidden", !show);
+      if (show) document.getElementById("watch-video-el").pause();
+    }
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape") toggleCamo(document.getElementById("camo-screen").classList.contains("hidden"));
+    });
+
+    function toggleSidebar() {
+      document.getElementById("yt-sidebar").classList.toggle("open");
+    }
+
+    function openView(view) {
+      ["home", "watch", "shorts", "subs", "studio", "store", "profile"].forEach(v => {
+        document.getElementById("view-" + v).classList.add("hidden");
+        const sBtn = document.getElementById("side-" + v);
+        if (sBtn) sBtn.classList.remove("active");
+        const mBtn = document.getElementById("mob-" + v);
+        if (mBtn) mBtn.classList.remove("active");
+      });
+      document.getElementById("view-" + view).classList.remove("hidden");
+      if (document.getElementById("side-" + view)) document.getElementById("side-" + view).classList.add("active");
+      if (document.getElementById("mob-" + view)) document.getElementById("mob-" + view).classList.add("active");
+      document.getElementById("yt-sidebar").classList.remove("open");
+
+      if (view !== "watch") document.getElementById("watch-video-el").pause();
+      if (view === "shorts") renderShorts();
+      if (view === "subs") renderSubs();
+      if (view === "profile") loadFromSupabase();
+    }
+
+    function filterCategory(cat, btn) {
+      selectedCategory = cat;
+      document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+      btn.classList.add("active");
+      renderHome();
+    }
+
+    // --- COMPTES GLOBAUX ---
+    async function handleLogin() {
+      let u = document.getElementById("auth-username").value.trim();
+      const p = document.getElementById("auth-password").value.trim();
+      if (!u || !p) return alert("Entre ton pseudo et ton mot de passe.");
+      if (!u.startsWith("@")) u = "@" + u;
+
+      const { data: remoteUsers } = await sb.from("users").select("*");
+      if (remoteUsers && remoteUsers.length) users = remoteUsers;
+
+      const found = users.find(acc => acc.username.toLowerCase() === u.toLowerCase() && acc.password === p);
+      if (!found) return alert("Identifiant ou mot de passe incorrect.");
+
+      currentUser = found;
+      localStorage.setItem("tsp_session", JSON.stringify(currentUser));
+      refreshProfileUI();
+    }
+
+    async function handleRegister() {
+      let u = document.getElementById("auth-username").value.trim();
+      const p = document.getElementById("auth-password").value.trim();
+      if (!u || !p) return alert("Remplis ton pseudo et ton mot de passe.");
+      if (!u.startsWith("@")) u = "@" + u;
+
+      const { data: existing } = await sb.from("users").select("username").ilike("username", u);
+      if (existing && existing.length > 0) return alert("Ce pseudo est déjà utilisé par quelqu'un !");
+
+      const newUser = { username: u, password: p, coins: 200, verified: false, role: "Créateur", tier: "free", avatar: "" };
+      currentUser = newUser;
+      await upsertUser(newUser);
+      alert("Compte créé et enregistré dans le Cloud ! Bienvenue " + u + " (+200 🪙).");
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      localStorage.removeItem("tsp_session");
+      refreshProfileUI();
+    }
+
+    function changeProfilePic(e) {
+      const file = e.target.files[0];
+      if (!file || !currentUser) return;
+      const reader = new FileReader();
+      reader.onload = async () => {
+        currentUser.avatar = reader.result;
+        await upsertUser(currentUser);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function isAdmin() {
+      return currentUser && currentUser.username.toLowerCase() === "@santiagovbto";
+    }
+
+    function canDelete(video) {
+      if (!currentUser || !video) return false;
+      return isAdmin() || video.author.toLowerCase() === currentUser.username.toLowerCase();
+    }
+
+    function refreshProfileUI() {
+      document.getElementById("top-coins").textContent = "🪙 " + (currentUser ? currentUser.coins : 0);
+      const loginCard = document.getElementById("login-card");
+      const accCard = document.getElementById("account-card");
+
+      if (!currentUser) {
+        loginCard.classList.remove("hidden");
+        accCard.classList.add("hidden");
+        return;
+      }
+      loginCard.classList.add("hidden");
+      accCard.classList.remove("hidden");
+      document.getElementById("acc-name").innerHTML = currentUser.username + (currentUser.verified ? ' <span class="verified">✔</span>' : '');
+      document.getElementById("acc-meta").textContent = `${currentUser.role} • Grade : ${(currentUser.tier || 'free').toUpperCase()} • ${currentUser.coins} 🪙`;
+      document.getElementById("acc-avatar").src = currentUser.avatar || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='68' height='68'><rect width='68' height='68' fill='%232563eb'/><text x='50%' y='55%' font-size='28' fill='white' text-anchor='middle' font-family='sans-serif'>" + (currentUser.username[1] || "U").toUpperCase() + "</text></svg>";
+
+      const adminBox = document.getElementById("admin-box");
+      if (isAdmin()) {
+        adminBox.classList.remove("hidden");
+        document.getElementById("admin-users").innerHTML = users.map(u =>
+          `<div style="padding:6px 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
+            <span><strong>${u.username}</strong> (Mdp : <code>${u.password}</code>)</span>
+            <span>🪙 ${u.coins}</span>
+          </div>`
+        ).join("");
+
+        document.getElementById("admin-vids").innerHTML = videos.length
+          ? videos.map(v => `
+              <div style="padding:6px 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                <span>[${v.format.toUpperCase()}] <strong>${v.title}</strong> (${v.author})</span>
+                <button class="btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="deleteVideoGlobally('${v.id}')">🗑️ Supprimer</button>
+              </div>
+            `).join("")
+          : '<p style="color:var(--muted);">Aucune vidéo en ligne.</p>';
+      } else {
+        adminBox.classList.add("hidden");
+      }
+    }
+
+    // --- RENDU ACCUEIL, LECTEUR YOUTUBE, SHORTS ---
+    function renderHome() {
+      const q = (document.getElementById("global-search")?.value || "").toLowerCase();
+      const grid = document.getElementById("home-grid");
+      const list = videos.filter(v => v.format === "video" && v.title.toLowerCase().includes(q));
+
+      if (!list.length) {
+        grid.innerHTML = '<p style="color:var(--muted);">Aucune vidéo publiée. Clique sur « ➕ Créer » pour publier la première vidéo !</p>';
+        return;
+      }
+
+      grid.innerHTML = list.map(v => `
+        <div class="yt-card">
+          <div class="yt-thumb-wrap" onclick="watchVideo('${v.id}')">
+            <video src="${v.video_url}" muted playsinline preload="metadata"></video>
+            <span class="yt-badge-type">HD</span>
+          </div>
+          <div class="yt-card-info">
+            <div style="display:flex; gap:10px; flex:1;" onclick="watchVideo('${v.id}')">
+              <div class="avatar">${(v.author[1] || "U").toUpperCase()}</div>
+              <div>
+                <div class="yt-title">${v.title}</div>
+                <div class="yt-sub">${v.author} ${v.verified ? '<span class="verified">✔</span>' : ''}</div>
+                <div class="yt-sub">${v.views} vues • ${v.likes} J'aime</div>
+              </div>
+            </div>
+            ${canDelete(v) ? `<button class="btn-danger" style="padding:5px 8px; font-size:0.75rem;" onclick="deleteVideoGlobally('${v.id}')" title="Supprimer pour tout le monde">🗑️</button>` : ''}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function watchVideo(id) {
+      const v = videos.find(item => item.id === id);
+      if (!v) return;
+      currentWatchId = id;
+      v.views += 1;
+      await sb.from("videos").update({ views: v.views }).eq("id", id);
+
+      document.getElementById("watch-title").textContent = v.title;
+      document.getElementById("watch-author").innerHTML = v.author + (v.verified ? ' <span class="verified">✔</span>' : '');
+      document.getElementById("watch-avatar").textContent = (v.author[1] || "U").toUpperCase();
+      document.getElementById("watch-views").textContent = v.views + " vues";
+      document.getElementById("watch-likes").textContent = v.likes;
+      document.getElementById("watch-video-el").src = v.video_url;
+
+      const subBtn = document.getElementById("watch-sub-btn");
+      const isSub = subscriptions.includes(v.author);
+      subBtn.textContent = isSub ? "Abonné ✓" : "S'abonner";
+      subBtn.classList.toggle("subscribed", isSub);
+
+      const delBtn = document.getElementById("watch-delete-btn");
+      delBtn.classList.toggle("hidden", !canDelete(v));
+
+      renderComments();
+      document.getElementById("up-next-list").innerHTML = videos.filter(x => x.id !== id).slice(0, 5).map(x => `
+        <div style="display:flex; gap:10px; cursor:pointer;" onclick="watchVideo('${x.id}')">
+          <div style="width:130px; aspect-ratio:16/9; background:#000; border-radius:8px; overflow:hidden; flex-shrink:0;">
+            <video src="${x.video_url}" muted preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>
+          </div>
+          <div>
+            <div style="font-size:0.86rem; font-weight:600;">${x.title}</div>
+            <div style="font-size:0.76rem; color:var(--muted); margin-top:4px;">${x.author}</div>
+          </div>
+        </div>
+      `).join("");
+
+      openView("watch");
+    }
+
+    function toggleSubscribe() {
+      const v = videos.find(item => item.id === currentWatchId);
+      if (!v) return;
+      const idx = subscriptions.indexOf(v.author);
+      if (idx === -1) subscriptions.push(v.author);
+      else subscriptions.splice(idx, 1);
+      localStorage.setItem("tsp_subs", JSON.stringify(subscriptions));
+      watchVideo(v.id);
+    }
+
+    function renderSubs() {
+      const grid = document.getElementById("subs-grid");
+      const list = videos.filter(v => subscriptions.includes(v.author));
+      if (!list.length) {
+        grid.innerHTML = '<p style="color:var(--muted);">Tu n\'es abonné à aucune chaîne pour le moment.</p>';
+        return;
+      }
+      grid.innerHTML = list.map(v => `
+        <div class="yt-card" onclick="watchVideo('${v.id}')">
+          <div class="yt-thumb-wrap"><video src="${v.video_url}" muted preload="metadata"></video></div>
+          <div class="yt-card-info">
+            <div class="avatar">${(v.author[1] || "U").toUpperCase()}</div>
+            <div>
+              <div class="yt-title">${v.title}</div>
+              <div class="yt-sub">${v.author} • ${v.views} vues</div>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function likeWatchedVideo() {
+      const v = videos.find(item => item.id === currentWatchId);
+      if (!v) return;
+      v.likes += 1;
+      document.getElementById("watch-likes").textContent = v.likes;
+      await sb.from("videos").update({ likes: v.likes }).eq("id", v.id);
+    }
+
+    function postComment() {
+      if (!currentUser) return alert("Connecte-toi pour commenter.");
+      const txt = document.getElementById("comment-input").value.trim();
+      if (!txt || !currentWatchId) return;
+      if (!commentsMap[currentWatchId]) commentsMap[currentWatchId] = [];
+      commentsMap[currentWatchId].unshift({ author: currentUser.username, text: txt });
+      localStorage.setItem("tsp_comments", JSON.stringify(commentsMap));
+      document.getElementById("comment-input").value = "";
+      renderComments();
+    }
+
+    function renderComments() {
+      const list = commentsMap[currentWatchId] || [];
+      document.getElementById("comments-list").innerHTML = list.length
+        ? list.map(c => `<div style="padding:8px 0; border-bottom:1px solid var(--border); font-size:0.86rem;"><strong>${c.author}</strong> : ${c.text}</div>`).join("")
+        : '<p style="color:var(--muted); font-size:0.84rem;">Aucun commentaire.</p>';
+    }
+
+    function renderShorts() {
+      const feed = document.getElementById("shorts-feed");
+      const shorts = videos.filter(v => v.format === "short");
+      if (!shorts.length) {
+        feed.innerHTML = '<p style="color:var(--muted);">Aucun Short publié pour le moment.</p>';
+        return;
+      }
+      feed.innerHTML = shorts.map(s => `
+        <div class="short-item">
+          <video src="${s.video_url}" loop playsinline webkit-playsinline controls></video>
+          <div class="short-ui">
+            <div class="short-meta">
+              <strong>${s.author} ${s.verified ? '<span class="verified">✔</span>' : ''}</strong>
+              <p style="font-size:0.9rem; margin-top:4px;">${s.title}</p>
+            </div>
+            <div class="short-side-btns">
+              <button class="short-circle" onclick="likeShortItem('${s.id}')">❤️<div style="font-size:0.7rem;">${s.likes}</div></button>
+              ${canDelete(s) ? `<button class="short-circle" style="background:#dc2626;" onclick="deleteVideoGlobally('${s.id}')" title="Supprimer pour tout le monde">🗑️</button>` : ''}
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    async function likeShortItem(id) {
+      const s = videos.find(item => item.id === id);
+      if (!s) return;
+      s.likes += 1;
+      await sb.from("videos").update({ likes: s.likes }).eq("id", id);
+      renderShorts();
+    }
+
+    // --- CAMÉRA & STUDIO CAPCUT ---
+    async function initCamera() {
+      const msg = document.getElementById("studio-cam-msg");
+      const vid = document.getElementById("cam-video");
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        msg.textContent = "⚠️ Utilise le bouton « 🎥 Caméra iPad/Tel » pour filmer.";
+        return null;
+      }
+      try {
+        if (camStream) camStream.getTracks().forEach(t => t.stop());
+        try {
+          camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: camFacing } }, audio: true });
+        } catch {
+          camStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+        }
+        vid.srcObject = camStream;
+        vid.muted = true;
+        await vid.play();
+        msg.textContent = "✅ Caméra activée ! Appuie sur ⏺ Enregistrer.";
+        return camStream;
+      } catch {
+        msg.textContent = "⚠️ Utilise « 🎥 Caméra iPad/Tel » pour ouvrir la caméra native.";
+        return null;
+      }
+    }
+
+    function switchCamFacing() {
+      camFacing = camFacing === "user" ? "environment" : "user";
+      initCamera();
+    }
+
+    async function toggleRecord() {
+      const btn = document.getElementById("btn-record");
+      const msg = document.getElementById("studio-cam-msg");
+      let track = camStream && camStream.getVideoTracks().find(t => t.readyState === "live");
+      if (!track) {
+        const s = await initCamera();
+        if (!s) return;
+      }
+      if (!recorder || recorder.state === "inactive") {
+        chunks = [];
+        try {
+          recorder = (typeof MediaRecorder !== "undefined" && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported("video/mp4"))
+            ? new MediaRecorder(camStream, { mimeType: "video/mp4" })
+            : new MediaRecorder(camStream);
+        } catch {
+          msg.textContent = "⚠️ Enregistrement direct bloqué : utilise « 🎥 Caméra iPad/Tel ».";
+          return;
+        }
+        recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+        recorder.onstop = () => {
+          const blob = new Blob(chunks, { type: recorder.mimeType || "video/mp4" });
+          clips.push({ name: "Clip #" + (clips.length + 1), blob });
+          renderCapcutTimeline();
+          msg.textContent = "✅ Clip ajouté à la timeline !";
+        };
+        recorder.start(250);
+        btn.textContent = "⏹ Arrêter";
+        msg.textContent = "🔴 Enregistrement en cours...";
+      } else {
+        recorder.stop();
+        btn.textContent = "⏺ Enregistrer";
+      }
+    }
+
+    function handleFileClip(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      clips.push({ name: file.name || "Clip #" + (clips.length + 1), blob: file });
+      renderCapcutTimeline();
+      document.getElementById("studio-cam-msg").textContent = "✅ Vidéo ajoutée à la timeline !";
+    }
+
+    function renderCapcutTimeline() {
+      const bar = document.getElementById("capcut-timeline");
+      bar.innerHTML = clips.length
+        ? clips.map((c, i) => `<div class="track-clip">🎞️ ${c.name} <span style="cursor:pointer;" onclick="clips.splice(${i},1);renderCapcutTimeline()">✕</span></div>`).join("")
+        : '<span style="color:var(--muted); font-size:0.8rem;">Timeline vide — ajoute un clip</span>';
+    }
+
+    function addSticker() {
+      const txt = document.getElementById("sticker-text").value.trim();
+      const color = document.getElementById("sticker-color").value;
+      if (!txt) return;
+      const el = document.createElement("div");
+      el.className = "sticker-node";
+      el.textContent = txt;
+      el.style.color = color;
+      let scale = 1, startDist = 0;
+
+      el.addEventListener("touchstart", e => {
+        if (e.touches.length === 2) {
+          startDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+        }
+      }, { passive: true });
+
+      el.addEventListener("touchmove", e => {
+        e.preventDefault();
+        const rect = document.getElementById("capcut-stage").getBoundingClientRect();
+        if (e.touches.length === 1) {
+          el.style.left = (e.touches[0].clientX - rect.left) + "px";
+          el.style.top = (e.touches[0].clientY - rect.top) + "px";
+        } else if (e.touches.length === 2 && startDist > 0) {
+          const d = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY);
+          scale = Math.min(3, Math.max(0.5, scale * (d / startDist)));
+          startDist = d;
+          el.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        }
+      }, { passive: false });
+
+      document.getElementById("stickers-container").appendChild(el);
+      document.getElementById("sticker-text").value = "";
+    }
+
+    async function publishVideoToCloud() {
+      if (!currentUser) return alert("Connecte-toi d'abord dans « Mon Compte / Admin ».");
+      const title = document.getElementById("vid-title-input").value.trim();
+      const format = document.getElementById("vid-format-select").value;
+      const fb = document.getElementById("publish-feedback");
+      const btn = document.getElementById("btn-publish-now");
+
+      if (!title) return alert("Ajoute un titre à ta vidéo.");
+      if (!clips.length) return alert("Ajoute au moins un clip vidéo.");
+      if (BANNED_WORDS.some(w => title.toLowerCase().includes(w))) {
+        fb.textContent = "❌ Publication refusée : titre non conforme.";
+        return;
+      }
+
+      btn.disabled = true;
+      fb.textContent = "☁️ Envoi de la vidéo vers Supabase...";
+      const blob = clips[0].blob;
+      const vidId = "vid_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+      const ext = (blob.type && blob.type.includes("webm")) ? "webm" : "mp4";
+      const fileName = `${vidId}.${ext}`;
+
+      const { error: upErr } = await sb.storage.from("videos").upload(fileName, blob, {
+        contentType: blob.type || "video/mp4",
+        upsert: true
+      });
+
+      if (upErr) {
+        btn.disabled = false;
+        fb.textContent = "❌ Erreur Storage : " + upErr.message;
+        return;
+      }
+
+      const { data: urlData } = sb.storage.from("videos").getPublicUrl(fileName);
+      const { error: dbErr } = await sb.from("videos").insert({
+        id: vidId,
+        title,
+        format,
+        author: currentUser.username,
+        verified: !!currentUser.verified,
+        views: 0,
+        likes: 0,
+        video_url: urlData.publicUrl
+      });
+
+      btn.disabled = false;
+      if (dbErr) {
+        fb.textContent = "❌ Erreur base de données : " + dbErr.message;
+        return;
+      }
+
+      currentUser.coins += 50;
+      await upsertUser(currentUser);
+      clips = [];
+      document.getElementById("stickers-container").innerHTML = "";
+      document.getElementById("vid-title-input").value = "";
+      renderCapcutTimeline();
+      fb.textContent = "✅ Publiée et visible par tout le monde !";
+      await loadFromSupabase();
+      openView(format === "short" ? "shorts" : "home");
+    }
+
+    // --- SUPPRESSION GLOBALE POUR TOUT LE MONDE ---
+    async function deleteVideoGlobally(id) {
+      const v = videos.find(item => item.id === id);
+      if (!v) return;
+      if (!canDelete(v)) return alert("Tu ne peux supprimer que tes propres vidéos.");
+      if (!confirm("Supprimer « " + v.title + " » définitivement pour TOUT LE MONDE ?")) return;
+
+      if (v.video_url) {
+        const file = v.video_url.split("/").pop();
+        if (file) await sb.storage.from("videos").remove([file]);
+      }
+
+      const { error } = await sb.from("videos").delete().eq("id", id);
+      if (error) return alert("Erreur suppression : " + error.message);
+
+      videos = videos.filter(item => item.id !== id);
+      saveGlobalBackup(true);
+      if (currentWatchId === id) openView("home");
+      renderHome();
+      renderShorts();
+      refreshProfileUI();
+      alert("🗑️ Vidéo supprimée définitivement pour tout le monde !");
+    }
+
+    async function tipCreator() {
+      if (!currentUser) return alert("Connecte-toi pour soutenir un créateur.");
+      if (currentUser.coins < 100) return alert("Solde insuffisant (100 🪙 requis).");
+      currentUser.coins -= 100;
+      await upsertUser(currentUser);
+      alert("🎁 Tu as envoyé 100 🪙 au créateur !");
+    }
+
+    async function buyTier(tier, cost) {
+      if (!currentUser) return alert("Connecte-toi d'abord.");
+      if (currentUser.coins < cost) return alert("Tu n'as pas assez de TubeCoins !");
+      currentUser.coins -= cost;
+      currentUser.tier = tier;
+      await upsertUser(currentUser);
+      alert("🎉 Grade " + tier.toUpperCase() + " activé !");
+    }
+
+    loadFromSupabase();
+  </script>
+</body>
+</html>
